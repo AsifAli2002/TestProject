@@ -1,7 +1,9 @@
-import React, {useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, StatusBar, StyleSheet, FlatList} from 'react-native';
 import CustomHeader from '../../components/CustomHeader';
 import CustomInput from '../../components/CustomInput';
+import {io, Socket} from 'socket.io-client';
+var socket;
 
 const ChatData = [
   {
@@ -63,7 +65,25 @@ const ChatData = [
 ];
 
 const ChatScreen = ({navigation}) => {
+  const [messages, setMessages] = useState([]);
   const scrollViewRef = useRef();
+
+  useEffect(() => {
+    socket = io('https://lis-chat-test.herokuapp.com');
+    // console.log('connected: ', socket?.connected);
+    // console.log('myId: ', socket?.id);
+
+    socket?.on('2', incoming => {
+    //   console.log({incoming});
+      setMessages(pre => [...pre, incoming]);
+    });
+  }, []);
+
+  const onSend = message => {
+    socket?.emit('2', {data: {message, id: socket?.id}});
+  };
+
+
   return (
     <>
       <StatusBar
@@ -76,8 +96,8 @@ const ChatScreen = ({navigation}) => {
         <CustomHeader />
 
         <FlatList
-          data={ChatData}
-          contentContainerStyle={{flexGrow: 1, paddingBottom: 15}}
+          data={messages || []}
+          contentContainerStyle={{flexGrow: 1, paddingBottom: 10}}
           keykeyboardShouldPersistTaps={true}
           showsVerticalScrollIndicator={false}
           ref={scrollViewRef}
@@ -85,24 +105,29 @@ const ChatScreen = ({navigation}) => {
             scrollViewRef?.current?.scrollToEnd({animated: true})
           }
           renderItem={({item, index}) => {
+            const {data} = item;
             return (
               <>
-                <View style={styles.receiver}>
-                  <Text style={[styles.name, {color: '#3e3e3e'}]}>Hi Alan</Text>
-                </View>
-                <View style={styles.sender}>
-                  <Text style={[styles.name, {color: '#fff'}]}>
-                    Photography
-                  </Text>
-                </View>
+                {data?.id == socket?.id ? (
+                  <View style={styles.sender}>
+                    <Text style={[styles.name, {color: '#fff'}]}>
+                      {data?.message}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.receiver}>
+                    <Text style={[styles.name, {color: '#3e3e3e'}]}>
+                      {data?.message}
+                    </Text>
+                  </View>
+                )}
               </>
             );
           }}
           keyExtractor={item => item.id}
-          // extraData={selectedId}
         />
       </View>
-      <CustomInput />
+      <CustomInput onSend={onSend} />
     </>
   );
 };

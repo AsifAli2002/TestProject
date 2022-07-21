@@ -11,7 +11,7 @@ import emoji from '../assets/emoji.png';
 import emoji2 from '../assets/emoji2.png';
 import enterArrow from '../assets/enterArrow.png';
 
-const CustomInput = ({navigation}) => {
+const CustomInput = ({navigation, onSend = () => {}}) => {
   const scrollViewRef = useRef();
   const [message, setMessage] = useState('');
   return (
@@ -26,18 +26,18 @@ const CustomInput = ({navigation}) => {
           )}
           <TextInput
             ref={scrollViewRef}
-            // onPressIn={() => {
-            //   setTimeout(() => {
-            //     scrollViewRef.current.scrollToEnd({animated: true});
-            //   }, 400);
-            // }}
             style={styles.input}
             placeholder="Type message"
             placeholderTextColor="grey"
             onChangeText={text => setMessage(text)}
-            //   value={message}
+            value={message}
           />
-          <TouchableOpacity            
+          <TouchableOpacity
+            onPress={() => {
+                onSend(message),
+                setMessage('')
+               
+            }}
             disabled={message.length === 0}
             style={[
               styles.sendButton,
