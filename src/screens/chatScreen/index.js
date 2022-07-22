@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   receiver: {
     borderRadius: 25,
     paddingHorizontal: 18,
